@@ -1,0 +1,73 @@
+Step 1: Environment Initialization and Target Hand Loading
+Goal: Add the Shadow Hand to the simulation scene and prepare its retargeting solver.
+
+Implementation:
+
+Load Shadow USD: In replay_allegro_grasp_isaacsim.py, in addition to loading the Allegro hand, also load the Shadow Hand USD file into the scene (located at assets/robots/robots/hands/shadow_hand/).
+Load retargeting config: Read the Shadow hand's offline configuration file configs/offline/shadow_hand_right.yml.
+Build the solver: Use RetargetingConfig to build the Shadow hand's SeqRetargeting object. This automatically initializes the underlying PositionOptimizer.
+Set URDF path: Ensure the code can locate the URDF files under the assets directory.
+Files involved:
+
+src/dex_retargeting/retargeting_config.py: Used to load the config and build the solver.
+src/dex_retargeting/configs/offline/shadow_hand_right.yml: Target configuration for the Shadow hand (defines which fingertip positions it needs to track).
+replay_allegro_grasp_isaacsim.py: Modify this script to incorporate the above logic.
+Step 2: Forward Kinematics (FK) for the Source Hand (Allegro)
+Goal: Convert the Allegro hand's joint angles from the YAML file into 3D spatial coordinates (fingertip positions), serving as a "common intermediate language".
+
+Implementation:
+
+Initialize the Wrapper: Use RobotWrapper to load the Allegro URDF (must match the URDF referenced in configs/offline/allegro_hand_right.yml).
+Read real-time / interpolated angles: The script contains a loop or physics stepping process during which the Allegro hand transitions from grasp_0 to grasp_1. At each frame, obtain the current joint angles q_allegro.
+Compute FK: Call robot_allegro.compute_forward_kinematics(q_allegro).
+Extract keypoints: Get the 3D positions of 8 key links on the Allegro hand (4 fingertips + 4 middle segments). The link names should be referenced from the Allegro config file.
+Files involved:
+
+src/dex_retargeting/robot_wrapper.py: Provides the compute_forward_kinematics and get_link_pose interfaces.
+src/dex_retargeting/configs/offline/allegro_hand_right.yml: Reference this file to determine which Allegro links to extract (e.g. link_15.0_tip, etc.).
+Step 3: Cross-Hand Mapping and Retargeting Solve
+Goal: "Translate" the Allegro hand's 3D coordinates into the format required by the Shadow hand, then solve for Shadow's joint angles.
+
+Implementation:
+
+Construct ref_value: The Shadow hand's configuration requires 10 target points (5 fingertips + 5 middle segments), while the Allegro hand only has 4 fingers. A mapping array must be constructed:
+  Thumb:  Allegro thumb  -> Shadow thumb
+  Index:  Allegro index  -> Shadow index
+  Middle: Allegro middle -> Shadow middle
+  Ring:   Allegro ring   -> Shadow ring
+  Little: Allegro ring   -> Shadow little finger (reuse ring data, or apply a fixed offset)
+Note: The 10 coordinates must be ordered strictly according to target_link_names in shadow_hand_right.yml.
+Execute Retargeting: Call retargeting_shadow.retarget(ref_value).
+Output: Obtain q_shadow (the target joint angles for the Shadow hand).
+Files involved:
+
+src/dex_retargeting/seq_retarget.py: Provides the retarget interface and performs the optimization.
+src/dex_retargeting/optimizer.py: The underlying PositionOptimizer is responsible for solving IK.
+src/dex_retargeting/configs/offline/shadow_hand_right.yml: Determines the ordering and length of the ref_value array.
+Step 4: Drive the Target Hand and Synchronized Demonstration
+Goal: Apply the computed joint angles to the Shadow Hand in the simulation, achieving synchronized motion between the two hands.
+
+Implementation:
+
+Convert drive commands: Map q_shadow (typically a NumPy array ordered according to the Pinocchio model) to the joint drive targets (Drive API) in Isaac Sim's USD.
+Synchronized update: In the main loop of replay_allegro_grasp_isaacsim.py (while simulation_app.is_running()), each time the Allegro hand advances one step, execute Steps 2 and 3 and update the Shadow hand's drive targets.
+Visual alignment: May require adjusting the base position of each hand in the World (e.g. placing the Shadow hand beside the Allegro hand) to prevent overlap.
+Files involved:
+
+replay_allegro_grasp_isaacsim.py: Add code to drive the Shadow hand in the main loop (refer to the existing set_drive_targets_via_usd function).
+
+Summary: Key Data Flow
+[003.yaml]
+    | (joint angles)
+[Allegro joint drive (Isaac Sim)] -> [Allegro motion]
+    | (same joint angles q_allegro)
+[RobotWrapper (Allegro)] -> [Compute FK]
+    | (3D coordinates of 8 links)
+[Mapping logic (8 points -> 10 points)]
+    | (ref_value: 3D coordinates of 10 links)
+[SeqRetargeting (Shadow)] -> [Position Optimizer]
+    | (q_shadow: Shadow joint angles)
+[Shadow joint drive (Isaac Sim)] -> [Shadow follows motion]
+
+Through these 4 steps, you fully reuse the existing RobotWrapper, Optimizer, and Config files from the library,
+connecting them only at the demo script level to achieve the required mapping.

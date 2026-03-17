@@ -1,0 +1,85 @@
+format: isaac_grasp
+format_version: 1.0
+
+object_frame: /World/Cube
+gripper_frame: /World/allegro_hand/palm_link
+
+grasps:
+   "grasp_0":
+      confidence: 1.0
+      position: [-0.35936204743244426, 0.19041279915548529, 0.11012647309339345]
+      orientation: {w: 0.0025476899239248894, xyz: [-0.5112231259315174, 0.8594434528552798, -0.0011730869762444245]}
+      cspace_position:
+         index_joint_0: -3.2630757118568e-07
+         middle_joint_0: -4.2404045075272734e-07
+         ring_joint_0: -8.465561904813512e-07
+         thumb_joint_0: 0.2792460322380066
+         index_joint_1: 0.002722398145124316
+         middle_joint_1: 0.004278740379959345
+         ring_joint_1: 0.004278744570910931
+         thumb_joint_1: 6.545106678856882e-09
+         index_joint_2: 0.0018141819164156914
+         middle_joint_2: 0.005665418226271868
+         ring_joint_2: 0.005665394477546215
+         thumb_joint_2: -5.3872830903856084e-05
+         index_joint_3: -5.497380328733925e-11
+         middle_joint_3: -6.031208865664439e-09
+         ring_joint_3: -1.643706948328827e-09
+         thumb_joint_3: 6.022931597904346e-10
+      pregrasp_cspace_position:
+         index_joint_0: -3.2630757118568e-07
+         middle_joint_0: -4.2404045075272734e-07
+         ring_joint_0: -8.465561904813512e-07
+         thumb_joint_0: 0.2792460322380066
+         index_joint_1: 0.002722398145124316
+         middle_joint_1: 0.004278740379959345
+         ring_joint_1: 0.004278744570910931
+         thumb_joint_1: 6.545106678856882e-09
+         index_joint_2: 0.0018141819164156914
+         middle_joint_2: 0.005665418226271868
+         ring_joint_2: 0.005665394477546215
+         thumb_joint_2: -5.3872830903856084e-05
+         index_joint_3: -5.497380328733925e-11
+         middle_joint_3: -6.031208865664439e-09
+         ring_joint_3: -1.643706948328827e-09
+         thumb_joint_3: 6.022931597904346e-10
+
+   "grasp_1":
+      confidence: 1.0
+      position: [-0.35936204743244426, 0.19041279915548529, 0.11012647309339345]
+      orientation: {w: 0.0025476899239248894, xyz: [-0.5112231259315174, 0.8594434528552798, -0.0011730869762444245]}
+      cspace_position:
+         index_joint_0: 3.6593966967757297e-08
+         middle_joint_0: 1.0955122142775053e-08
+         ring_joint_0: -4.1220354773940926e-07
+         thumb_joint_0: 1.5699979066848755
+         index_joint_1: 0.8002433776855469
+         middle_joint_1: 0.8000711798667908
+         ring_joint_1: 0.8000712394714355
+         thumb_joint_1: 2.6590173547447193e-06
+         index_joint_2: 0.5399441719055176
+         middle_joint_2: 0.5390408039093018
+         ring_joint_2: 0.539040744304657
+         thumb_joint_2: -0.27912262082099915
+         index_joint_3: 0.29999980330467224
+         middle_joint_3: 0.29999980330467224
+         ring_joint_3: 0.29999983310699463
+         thumb_joint_3: 0.7499995231628418
+      pregrasp_cspace_position:
+         index_joint_0: 3.6593966967757297e-08
+         middle_joint_0: 1.0955122142775053e-08
+         ring_joint_0: -4.1220354773940926e-07
+         thumb_joint_0: 1.5699979066848755
+         index_joint_1: 0.8002433776855469
+         middle_joint_1: 0.8000711798667908
+         ring_joint_1: 0.8000712394714355
+         thumb_joint_1: 2.6590173547447193e-06
+         index_joint_2: 0.5399441719055176
+         middle_joint_2: 0.5390408039093018
+         ring_joint_2: 0.539040744304657
+         thumb_joint_2: -0.27912262082099915
+         index_joint_3: 0.29999980330467224
+         middle_joint_3: 0.29999980330467224
+         ring_joint_3: 0.29999983310699463
+         thumb_joint_3: 0.7499995231628418
+
