@@ -330,7 +330,7 @@ def main():
 
     world = IsaacWorld(stage_units_in_meters=1.0)
     robot = world.scene.add(Robot(prim_path=hand_prim_path, name="allegro_hand"))
-    shadow_world_pos = np.array([0.0, -0.5, 0.2], dtype=np.float32)   # Shadow position in world frame, used for CSV writing
+    shadow_world_pos = np.array([0.4, 0.0, 0.2], dtype=np.float32)   # Shadow position in world frame, used for CSV writing
     shadow_world_rot = np.array([0.0, 0.0, 1.0, 0.0], dtype=np.float32) # Shadow orientation in world frame as quaternion (WXYZ)
     shadow_art_view = None   # Shadow's ArticulationView, used in main loop to call set_joint_positions
     shadow_dof_names = []    # Shadow DOF name list in Isaac Sim, used to map retargeting joint order
