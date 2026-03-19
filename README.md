@@ -1,130 +1,54 @@
-<div align="center">
-  <h1 align="center"> Dex Retargeting </h1>
-  <h3 align="center">
-    Various retargeting optimizers to translate human hand motion to robot hand motion.
-  </h3>
-</div>
-<p align="center">
-  <!-- code check badges -->
-  <a href='https://github.com/dexsuite/dex-retargeting/blob/main/.github/workflows/test.yml'>
-      <img src='https://github.com/dexsuite/dex-retargeting/actions/workflows/test.yml/badge.svg' alt='Test Status' />
-  </a>
-  <!-- issue badge -->
-  <a href="https://github.com/dexsuite/dex-retargeting/issues">
-  <img src="https://img.shields.io/github/issues-closed/dexsuite/dex-retargeting.svg" alt="Issues Closed">
-  </a>
-  <a href="https://github.com/dexsuite/dex-retargeting/issues?q=is%3Aissue+is%3Aclosed">
-  <img src="https://img.shields.io/github/issues/dexsuite/dex-retargeting.svg" alt="Issues">
-  </a>
-  <!-- release badge -->
-  <a href="https://github.com/dexsuite/dex-retargeting/tags">
-  <img src="https://img.shields.io/github/v/release/dexsuite/dex-retargeting.svg?include_prereleases&sort=semver" alt="Releases">
-  </a>
-  <!-- pypi badge -->
-  <a href="https://github.com/dexsuite/dex-retargeting/tags">
-  <img src="https://static.pepy.tech/badge/dex_retargeting/month" alt="pypi">
-  </a>
-  <!-- license badge -->
-  <a href="https://github.com/dexsuite/dex-retargeting/blob/main/LICENSE">
-      <img alt="License" src="https://img.shields.io/badge/license-MIT-blue">
-  </a>
-</p>
-<div align="center">
-  <h4>This repo originates from <a href="https://yzqin.github.io/anyteleop/">AnyTeleop Project</a></h4>
-  <img src="example/vector_retargeting/teaser.webp" alt="Retargeting with different hands.">
-</div>
+# Setup Guide
 
-## Installation
+## Script Description
 
-```shell
-pip install dex_retargeting
-```
+- **replay_allegro_grasp_isaacsim.py**: Main script. Runs the Allegro Hand grasping simulation in Isaac Sim and retargets motion to the Shadow Hand in real time. The first 120 frames are throttled to approximately 12 seconds, and fingertip trajectories are written to `fingertip_coords.csv`.
+- **plot_fingertip_trajectories.py**: Plotting script. Reads `fingertip_coords.csv`, plots the fingertip trajectory curves for Allegro (4 fingers) and Shadow (5 fingers) in world coordinates, and saves the result as `fingertip_trajectories.png`.
 
-To run the example, you may need additional dependencies for rendering and hand pose detection.
+## Dependencies Required by the Main Script
 
-```shell
-git clone https://github.com/dexsuite/dex-retargeting
-cd dex-retargeting
-pip install -e ".[example]"
-```
+- **NVIDIA Isaac Sim**
+  The main script must be run under Isaac Sim's bundled Python environment, which provides the `isaacsim`, `omni.*`, and `pxr` (USD) modules. Please install the version of Isaac Sim that matches the script.
 
-## Changelog
+- **Python packages (install inside Isaac Sim's Python environment)**
+  If not already bundled with Isaac Sim, install the following packages using Isaac Sim's Python:
+  - `numpy`
+  - `PyYAML` (`pip install PyYAML`)
+  - `anytree` (the main script will attempt to auto-install it if missing: `pip install anytree>=2.12.0`)
+  - `pin` (used by dex_retargeting for forward kinematics; must be compatible with the current Python version)
+  - `pytransform3d` (used by dex_retargeting)
 
-### v0.5.0
-
-- **Numpy Support Update**: Starting from this version, `dex-retargeting` supports `numpy >= 2.0.0`. If you need to use `numpy < 2.0.0`, you can install an earlier version of `dex-retargeting` using:
+  Example (using Isaac Sim's Python executable path):
   ```bash
-  pip install "dex-retargeting<0.5.0"
+  # Run pip via Isaac Sim's python — adjust the path to match your installation:
+  <Isaac_Sim_install_dir>/python.sh -m pip install numpy PyYAML anytree pin pytransform3d
   ```
 
-- **Mediapipe Compatibility**: Although `mediapipe` lists `numpy 1.x` as a dependency, it is compatible with `numpy >= 2.0.0`. You can safely ignore any warnings related to this and continue using `numpy 2.0.0` or higher.
+- **Repository contents**
+  - The `src` directory (containing the `dex_retargeting` package) must be on the Python path. The main script adds it via `sys.path`.
+  - `assets/robots/robots/hands/` must contain the Allegro and Shadow URDF model files.
+  - `src/dex_retargeting/configs/offline/` must contain `allegro_hand_right.yml` and `shadow_hand_right.yml`.
+  - Grasp data: placed in the same directory as the main script, or specified via `--yaml`. Defaults to `003.yaml` (must contain a `grasp_1` entry with `cspace_position`).
 
-- **Dependency Cleanup**: Removed `trimesh` as a dependency to simplify installation and reduce potential conflicts. The core functionality of `dex-retargeting` no longer requires mesh processing capabilities.
+- **Optional: Shadow Hand model**
+  To display the Shadow Hand in the scene, provide a Shadow USD file (e.g. in a `ShadowHand/` directory) or a usable Shadow URDF (e.g. under `assets/robots/robots/hands/shadow_hand/`). Without it, only the Allegro Hand will be displayed, but retargeting computation will still run.
 
-## Examples
+## How to Launch the Main Script (replay_allegro_grasp_isaacsim.py)
 
-### Retargeting from human hand video
+Run under **Isaac Sim's bundled Python environment** (do not use the system Python), otherwise Isaac Sim modules will be missing.
 
-This type of retargeting can be used for applications like teleoperation,
-e.g. [AnyTeleop](https://yzqin.github.io/anyteleop/).
+1. **From the Isaac Sim installation directory**, use its provided `python.bat` (Windows) or `python.sh` (Linux) to run the script:
 
-[Tutorial on retargeting from human hand video](example/vector_retargeting/README.md)
+   ```bash
+   # Windows (run from Isaac Sim's python directory or after adding it to PATH)
+   python.bat replay_allegro_grasp_isaacsim.py
 
-### Retarget from hand object pose dataset
+   # Linux
+   ./python.sh replay_allegro_grasp_isaacsim.py
+   ```
 
-![teaser](example/position_retargeting/hand_object.webp)
+2. Alternatively, open and run `replay_allegro_grasp_isaacsim.py` in the **Isaac Sim Script Editor**.
 
-This type of retargeting can be used post-process human data for robot imitation,
-e.g. [DexMV](https://yzqin.github.io/dexmv/).
+3. Before running, set the working directory to the repository root (the directory containing `replay_allegro_grasp_isaacsim.py`), or ensure the script can correctly resolve paths to `assets`, `src`, and the grasp YAML file (e.g. `003.yaml`).
 
-[Tutorial on retargeting from hand-object pose dataset](example/position_retargeting/README.md)
-
-## FAQ and Troubleshooting
-
-### Joint Orders for Retargeting
-
-URDF parsers, such as ROS, physical simulators, real robot driver, and this repository, may parse URDF files with
-different joint orders. To use `dex-retargeting` results with other libraries, handle joint ordering explicitly **using
-joint names**, which are unique within a URDF file.
-
-Example: Using `dex-retargeting` with the SAPIEN simulator
-
-```python
-from dex_retargeting.seq_retarget import SeqRetargeting
-
-retargeting: SeqRetargeting
-sapien_joint_names = [joint.get_name() for joint in robot.get_active_joints()]
-retargeting_joint_names = retargeting.joint_names
-retargeting_to_sapien = np.array([retargeting_joint_names.index(name) for name in sapien_joint_names]).astype(int)
-
-# Use the index map to handle joint order differences
-sapien_robot.set_qpos(retarget_qpos[retargeting_to_sapien])
-```
-
-This example retrieves joint names from the SAPIEN robot and `SeqRetargeting` object, creates a mapping
-array (`retargeting_to_sapien`) to map joint indices, and sets the SAPIEN robot's joint positions using the retargeted
-joint positions.
-
-## Citation
-
-This repository is derived from the [AnyTeleop Project](https://yzqin.github.io/anyteleop/) and is subject to ongoing
-enhancements. If you utilize this work, please cite it as follows:
-
-```shell
-@inproceedings{qin2023anyteleop,
-  title     = {AnyTeleop: A General Vision-Based Dexterous Robot Arm-Hand Teleoperation System},
-  author    = {Qin, Yuzhe and Yang, Wei and Huang, Binghao and Van Wyk, Karl and Su, Hao and Wang, Xiaolong and Chao, Yu-Wei and Fox, Dieter},
-  booktitle = {Robotics: Science and Systems},
-  year      = {2023}
-}
-```
-
-## Acknowledgments
-
-The robot hand models in this repository are sourced directly from [dex-urdf](https://github.com/dexsuite/dex-urdf).
-The robot kinematics in this repo are based on [pinocchio](https://github.com/stack-of-tasks/pinocchio).
-Examples use [SAPIEN](https://github.com/haosulab/SAPIEN) for rendering and visualization.
-
-The `PositionOptimizer` leverages methodologies from our earlier
-project, [From One Hand to Multiple Hands](https://yzqin.github.io/dex-teleop-imitation/).
-Additionally, the `DexPilotOptimizer`is crafted using insights from [DexPilot](https://sites.google.com/view/dex-pilot).
+After launch, the simulation does not start automatically. Click the **Play** button in the Isaac Sim UI to begin.
